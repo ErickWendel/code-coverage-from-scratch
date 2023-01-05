@@ -1,4 +1,4 @@
-const inspector = require('inspector/promises');
+const inspector = require('inspector/promises')
 const fs = require('fs/promises')
 const path = require('path')
 
@@ -9,27 +9,25 @@ function filterResult(result) {
     return path.isAbsolute(url) && url !== __filename
   })
 }
- 
+
 async function showMetrics() {
   // create a new inspector session
-  const session = new inspector.Session();
+  const session = new inspector.Session()
   inspector.open(0, true)
   // connect to the inspector session
-  session.connect();
-
-  // promisify the .post method
+  session.connect()
 
   // enable the debugger
-  await session.post('Profiler.enable');
-  await session.post('Debugger.enable');
+  await session.post('Profiler.enable')
+  await session.post('Debugger.enable')
   await session.post(
     'Profiler.startPreciseCoverage', {
-      callCount: true,
-      detailed: true
-    }
+    callCount: true,
+    detailed: true
+  }
   )
   const moduleName = 'sum'
-  require(`./${moduleName}`);
+  require(`./${moduleName}`)
 
   const preciseCoverage = await session.post('Profiler.takePreciseCoverage')
   await session.post('Profiler.stopPreciseCoverage')
@@ -41,54 +39,31 @@ async function showMetrics() {
   }
 }
 
-// function generateCoverageReport(sourceCode, coverage) {
-//   console.log(JSON.stringify(coverage, null, 2))
-//   // split the source code into an array of lines
-//   let lines = sourceCode
-//   let myLines = ''
-//   for (const fn of coverage) {
-//     if (!fn.functionName) continue;
-
-//     for (const range of fn.ranges) {
-//       if (range.count) continue;
-
-//       const input = lines;
-//       const output = input.slice(0, range.startOffset) +
-//         // "<---- aqui" +
-//         "\x1b[31m" + 
-//         input.slice(range.startOffset, range.endOffset) +
-//         // ">---- aqui" +
-//         "\x1b[0m" + 
-//         input.slice(range.endOffset);
-//       myLines = output
-//       break
-//     }
-//   }
-//   console.log(myLines)
-// }
-
 function generateCoverageReport(sourceCode, coverage) {
-  // split the source code into an array of lines
-  let lines = sourceCode
-  let linesSplitted = sourceCode.split('\n')
-  console.log(JSON.stringify(coverage, null, 2))
-  for (const fn of coverage) {
-    if (!fn.functionName) continue;
-
-    for (const range of fn.ranges) {
-      if (range.count) continue;
-
-      const fullLine = lines.slice(range.startOffset, range.endOffset).trimStart()
-      const str = linesSplitted.map(item => item.trimStart())
-      for (const i of fullLine.split('\n').map(item => item.trimStart())) {
-        const index = str.indexOf(i)
-        if(index == -1) continue;
-        // console.log('line', linesSplitted[index])
-        linesSplitted[index] = `\x1b[31m ${linesSplitted[index]} \x1b[0m`
+  // Find the lines of code that are not covered by the test cases
+  const uncoveredLines = []
+  coverage.forEach(cov => {
+    cov.ranges.forEach(range => {
+      if (range.count !== 0) return
+      // Extract the lines of code from the start and end offsets
+      const startLine = sourceCode.substring(0, range.startOffset).split('\n').length
+      const endLine = sourceCode.substring(0, range.endOffset).split('\n').length
+      for (let i = startLine; i <= endLine; i++) {
+        uncoveredLines.push(i)
       }
+
+    })
+  })
+
+  // Enclose the uncovered lines of code in ANSI escape codes for red text,
+  // ignoring lines that start with "}"
+  sourceCode.split('\n').forEach((line, i) => {
+    if (uncoveredLines.includes(i + 1) && !line.startsWith('}') ) {
+      console.log('\x1b[31m' + line + '\x1b[0m')
+    } else {
+      console.log(line)
     }
-  }
-  console.log(linesSplitted.join("\n"))
+  })
 }
-// start the showMetrics function
-showMetrics();
+
+showMetrics()

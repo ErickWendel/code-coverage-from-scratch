@@ -19,7 +19,7 @@ function sum(a, b) {
 }
 
 sum(10, 20)
+sum(3, 20)
 // sum(4, 20)
-// sum(6, 20)
-// sum(3, 20)
-// sum(20, 20)
+sum(6, 20)
+sum(20, 20)
