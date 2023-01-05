@@ -4,6 +4,12 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
+const COLORS = {
+  GREEN: '\x1b[32m',
+  RED:'\x1b[31m',
+  END_LINE: '\x1b[0m'
+}
+
 
 function filterResult(result) {
   return result.filter(({ url }) => {
@@ -15,35 +21,7 @@ function filterResult(result) {
   })
 }
 
-async function collectMetrics({ entryPoint }) {
-  const session = new inspector.Session()
-  session.connect()
-
-  await session.post('Profiler.enable')
-  await session.post(
-    'Profiler.startPreciseCoverage', {
-    callCount: true,
-    detailed: true
-  })
-
-  // execute entry point
-  try {
-    await import(`./${entryPoint}`)
-  } catch (error) { }
-
-  const preciseCoverage = await session.post('Profiler.takePreciseCoverage')
-  await session.post('Profiler.stopPreciseCoverage')
-
-  const results = filterResult(preciseCoverage.result)
-  for (const coverage of results) {
-    const filename = fileURLToPath(coverage.url)
-    const sourceCode = await fs.readFile(filename, 'utf8')
-    generateCoverageReport(filename, sourceCode, coverage.functions)
-  }
-}
-
 function generateCoverageReport(filename, sourceCode, coverage) {
-
   const uncoveredLines = []
   for (const cov of coverage) {
     for (const range of cov.ranges) {
@@ -57,18 +35,40 @@ function generateCoverageReport(filename, sourceCode, coverage) {
     }
   }
 
-  console.log('\n', '\x1b[32m' + filename + '\x1b[0m')
-
+  console.log('\n' + COLORS.GREEN + filename + COLORS.END_LINE)
   sourceCode.split('\n').forEach((line, i) => {
     if (uncoveredLines.includes(i + 1) && !line.startsWith('}')) {
-      console.log('\x1b[31m' + line + '\x1b[0m')
+      console.log(COLORS.RED + line + COLORS.END_LINE)
     } else {
       console.log(line)
     }
   })
 }
 
-// we could've get this filename from the cli
+// we could've gotten this filename from the cli
 // and execute something like ./coverage.mjs index.mjs as c8 does
-const entryPoint = './index.mjs'
-collectMetrics({ entryPoint })
+const ENTRYPOINT = './index.mjs'
+const session = new inspector.Session()
+session.connect()
+
+await session.post('Profiler.enable')
+await session.post(
+  'Profiler.startPreciseCoverage', {
+  callCount: true,
+  detailed: true
+})
+
+// execute entry point
+try {
+  await import(`./${ENTRYPOINT}`)
+} catch (error) { }
+
+const preciseCoverage = await session.post('Profiler.takePreciseCoverage')
+await session.post('Profiler.stopPreciseCoverage')
+
+const results = filterResult(preciseCoverage.result)
+for (const coverage of results) {
+  const filename = fileURLToPath(coverage.url)
+  const sourceCode = await fs.readFile(filename, 'utf8')
+  generateCoverageReport(filename, sourceCode, coverage.functions)
+}
