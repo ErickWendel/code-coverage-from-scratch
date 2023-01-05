@@ -1,0 +1,29 @@
+[
+  {
+    "functionName": "",
+    "ranges": [
+      {
+        "startOffset": 0,
+        "endOffset": 264,
+        "count": 1
+      }
+    ],
+    "isBlockCoverage": true
+  },
+  {
+    "functionName": "sum",
+    "ranges": [
+      {
+        "startOffset": 0,
+        "endOffset": 194,
+        "count": 1
+      },
+      {
+        "startOffset": 68,
+        "endOffset": 193,
+        "count": 0
+      }
+    ],
+    "isBlockCoverage": true
+  }
+]
