@@ -1,0 +1,52 @@
+[
+  {
+    "scriptId": "432",
+    "url": "file:///Users/erickwendel/Downloads/projetos/code-coverage/recorded/coverage-app/index.mjs",
+    "functions": [
+      {
+        "functionName": "",
+        "ranges": [
+          {
+            "startOffset": 0,
+            "endOffset": 104,
+            "count": 1
+          }
+        ],
+        "isBlockCoverage": true
+      }
+    ]
+  },
+  {
+    "scriptId": "433",
+    "url": "file:///Users/erickwendel/Downloads/projetos/code-coverage/recorded/coverage-app/calc.mjs",
+    "functions": [
+      {
+        "functionName": "",
+        "ranges": [
+          {
+            "startOffset": 0,
+            "endOffset": 213,
+            "count": 1
+          }
+        ],
+        "isBlockCoverage": true
+      },
+      {
+        "functionName": "calc",
+        "ranges": [
+          {
+            "startOffset": 0,
+            "endOffset": 192,
+            "count": 1
+          },
+          {
+            "startOffset": 69,
+            "endOffset": 191,
+            "count": 0
+          }
+        ],
+        "isBlockCoverage": true
+      }
+    ]
+  }
+]
